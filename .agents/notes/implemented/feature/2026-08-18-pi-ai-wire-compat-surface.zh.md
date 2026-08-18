@@ -14,11 +14,11 @@ pi-ai 依据提供方 id 与 baseURL 决定每个请求的形状——系统提�
 
 ## Decision
 
-每个 pi-ai compat 类型一张漂移门禁——以 `Record<keyof OpenAICompletionsCompat | …, CompatDisposition>` 为键——把每一个上游字段分类为 `offer` 或 `withhold`。去重后三十个字段，开放二十个。分界线在于私有 URL 能推出什么：凡是无法从未识别端点推断的，部署方必须能够说出口；而 pi-ai 已安装 catalog 为具名厂商设定的字段保持扣留，因为伸手去够 `openRouterRouting` 或 `deferredToolsMode` 的路由，本就是一条应当以该厂商命名、并继承其值的 catalog 路由。
+每个 pi-ai compat 类型一张漂移门禁——以 `Record<keyof OpenAICompletionsCompat | …, CompatDisposition>` 为键——把每一个上游字段分类为 `offer` 或 `withhold`。四个类型合计四十二项字段分类（同一名字在多个 compat 类型中重复出现时按类型各计一次），开放二十八项。分界线在于私有 URL 能推出什么：凡是无法从未识别端点推断的，部署方必须能够说出口；而 pi-ai 已安装 catalog 为具名厂商设定的字段保持扣留，因为伸手去够 `openRouterRouting` 或 `deferredToolsMode` 的路由，本就是一条应当以该厂商命名、并继承其值的 catalog 路由。
 
 `PiAiCompatProfile` 保持为带逐字段 JSDoc 的显式 interface——它是配置界面所渲染、也是 `docs/config-catalog.md` 所粘贴的东西——并由一个作用在对称差上的类型级 `AssertNever` 证明它恰好命名了开放集。schemastery schema 声明为 `z<PiAiCompatProfile>`，而使这条标注在两个方向上都真正吃劲的是 `exactOptionalPropertyTypes`，于是四个面互锁：上游新增字段、门禁漏一条、interface 忘记一个字段、schema 少一个键，都会在编译期失败。字段的**类型**派生自上游而非重述，另有一条证明把 profile 钉为可赋值给上游 compat 类型，因此被拓宽的值并集不会悄悄收窄配置所接受的范围——否则物化处对 `ModelCompat` 的强转会把它洗掉。
 
-协议适用性逐字段判断，且归组依据是 compat **类型**而非协议名：pi-ai 让 `openai-responses`、`azure-openai-responses` 与 `openai-codex-responses` 共用同一个 `OpenAIResponsesCompat`，因此可设在其中之一的开关，三者皆可设。仅按协议名归组曾使两条随附的 catalog 路由拿不到其自身模型所声明的字段。协议集派生自 `Model.compat` 自身的条件类型，因此某个版本若给别的协议加上 compat 类型，门禁列表会以点名的方式失败。模型级开关若其协议并不接受，解析失败并点名该协议实际提供哪些开关；路由级开关则落在读取它的模型上、跳过其余模型，只有当路由上没有任何模型能读取它时才被拒绝。`chatTemplateKwargs` 予以开放，这正是两个 `chat-template` 思考格式得以命名的前提；两者的配对不做交叉校验，因为实际生效的格式可能来自 catalog 条目或 pi-ai 的检测，而解析读不到那两层。
+协议适用性逐字段判断，且归组依据是 compat **类型**而非协议名：pi-ai 让 `openai-responses`、`azure-openai-responses` 与 `openai-codex-responses` 共用同一个 `OpenAIResponsesCompat`，因此可设在其中之一的开关，三者皆可设。仅按协议名归组曾使两条随附的 catalog 路由拿不到其自身模型所声明的字段。协议集派生自 `Model.compat` 自身的条件类型，因此某个版本若给别的协议加上 compat 类型，门禁列表会以点名的方式失败。模型级开关若其协议并不接受，解析失败并点名该协议实际提供哪些开关；路由级开关则落在读取它的模型上、跳过其余模型，只有当路由上没有任何模型能读取它时才被拒绝。`chatTemplateKwargs` 与 `chatTemplateArgs` 予以开放，这正是两个 `chat-template` 思考格式与 `baseten` 得以命名的前提；格式与参数的配对不做交叉校验，因为实际生效的格式可能来自 catalog 条目或 pi-ai 的检测，而解析读不到那两层。
 
 三类 `compat` 键在其被写下之处遭到拒绝而非丢弃：没有任何协议声明的键、被门禁扣留的键，以及完全没有写值的键。该检查在任何协议解析之前遍历全部键，因此即便路由上的模型永远不会走到那个本会接受它的协议，笔误同样失败。它刻意读取原始键：被扣留或未声明的名字不在 schema 中，所以 schemastery 不可能物化它，写下它的必然是人。无值那一类是必须失败而不能忽略的：schemastery 会把 YAML 裸键放行为 null，照单收下就会用 null 写覆盖已安装 catalog 的值，随后 pi-ai 的 `??` 转而去够它的 baseURL 检测，catalog 这一层被整个跳过。随后再单独过滤携带值的字段，因为 schemastery 会把缺省的 dict 物化成 `{}`，于是无论有没有人写过，`chatTemplateKwargs` 都出现在每一个解析过的 profile 上。
 

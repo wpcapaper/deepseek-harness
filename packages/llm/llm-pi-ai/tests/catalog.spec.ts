@@ -637,7 +637,7 @@ describe('per-model reasoning efforts', () => {
   it('narrows a catalog model’s levels in place', () => {
     const [catalogModel] = getBuiltinModels('deepseek')
     if (catalogModel === undefined) throw new Error('the installed catalog ships no deepseek model')
-    expect(getSupportedThinkingLevels(catalogModel as Model<Api>)).toEqual(['off', 'high', 'max'])
+    expect(getSupportedThinkingLevels(catalogModel as Model<Api>)).toEqual(['off', 'low', 'high', 'max'])
 
     const model = modelOf({
       deepseek: { models: [{ id: catalogModel.id, reasoningEfforts: { off: null, high: 'high' } }] },
@@ -918,6 +918,40 @@ describe('compat switches', () => {
       thinkingFormat: 'qwen-chat-template',
       chatTemplateKwargs: { enable_thinking: { $var: 'thinking.enabled' } },
     })
+  })
+
+  it('carries baseten args beside the thinking format that dispatches through them', () => {
+    const models = modelsOf({
+      'acme-baseten': {
+        api: 'openai-completions',
+        baseURL: 'https://acme.test',
+        models: [{
+          id: 'baseten-local',
+          reasoningEfforts: { off: null, medium: 'medium' },
+          compat: {
+            thinkingFormat: 'baseten',
+            chatTemplateArgs: { thinking: { $var: 'thinking.enabled' } },
+            supportsThinkingTokenBudget: true,
+          },
+        }],
+      },
+    }, 'acme-baseten')
+
+    expect(models.get('baseten-local')?.compat).toEqual({
+      thinkingFormat: 'baseten',
+      chatTemplateArgs: { thinking: { $var: 'thinking.enabled' } },
+      supportsThinkingTokenBudget: true,
+    })
+  })
+
+  it('refuses a withheld compat key naming the configurable set', () => {
+    expect(() => resolveProfiles({
+      'acme-gateway': {
+        api: 'openai-responses',
+        baseURL: 'https://acme.test',
+        models: [{ id: 'acme-a', compat: { supportsAdditionalTools: true } as never }],
+      },
+    })).toThrow(/compat "supportsAdditionalTools", which is not configurable here/)
   })
 
   it('rejects a model switch on an unrecognized protocol as having no configurable compat', () => {

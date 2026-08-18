@@ -374,7 +374,7 @@ export class PiAiAdapter extends LlmAdapter {
         // Harness-owned and therefore win collisions.
         headers: requestHeaders(profile.headers),
       })
-      const iterator = toStreamChunks(events, model.contextWindow)[Symbol.asyncIterator]()
+      const iterator = toStreamChunks(events, model.contextWindow, watchdog.signal)[Symbol.asyncIterator]()
       let exhausted = false
       try {
         while (true) {

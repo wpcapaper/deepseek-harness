@@ -1178,6 +1178,8 @@ export interface PiAiCompatProfile {
   supportsReasoningEffort?: boolean
   /** Whether the endpoint accepts `stream_options: {include_usage: true}`; `openai-completions`. */
   supportsUsageInStreaming?: boolean
+  /** Whether streamed responses carry `finish_reason`; `openai-completions`. */
+  supportsFinishReason?: boolean
   /** Which output-cap field the endpoint reads; `openai-completions`. */
   maxTokensField?: NonNullable<OpenAICompletionsCompat['maxTokensField']>
   /** Whether tool results must carry `name`; `openai-completions`. */
@@ -1198,6 +1200,17 @@ export interface PiAiCompatProfile {
    * can read, so kwargs set beside another format are sent nowhere.
    */
   chatTemplateKwargs?: NonNullable<OpenAICompletionsCompat['chatTemplateKwargs']>
+  /**
+   * Args sent as `chat_template_args`, which pi-ai reads only under the
+   * `baseten` thinking format; `openai-completions`. Nothing checks that
+   * pairing, for the same reason as `chatTemplateKwargs` above.
+   */
+  chatTemplateArgs?: NonNullable<OpenAICompletionsCompat['chatTemplateArgs']>
+  /**
+   * Whether the endpoint accepts `thinking_token_budget` to cap reasoning
+   * tokens separately from the answer; `openai-completions`.
+   */
+  supportsThinkingTokenBudget?: boolean
   /**
    * Whether the endpoint accepts `strict` in tool definitions;
    * `openai-completions`, the three Responses protocols, `bedrock-converse-stream`.
