@@ -108,6 +108,22 @@ describe('SidebarRoot shell', () => {
     expect(container.querySelector('svg')).not.toBeNull()
   })
 
+  it('labels the fallback brand with the build-time client title', () => {
+    vi.stubEnv('DSH_CLIENT_COMMIT_HASH', '0123456')
+    vi.stubEnv('DSH_CLIENT_TITLE', 'Olivia Harness')
+    render(<SidebarRoot
+      collapsed={false} width={300}
+      useSessions={neverHook} useWorkspaces={neverHook}
+      startSession={vi.fn()} toggleSidebar={vi.fn()} t={t}
+      renderSlot={((_key: string, _owner: unknown, options?: { fallback?: ReactNode }) =>
+        options?.fallback ?? null) as SidebarRootComponentProps['renderSlot']}
+    />)
+
+    expect(screen.getByText('Olivia Harness')).toBeTruthy()
+    expect(screen.queryByText('DSH Local Build')).toBeNull()
+    expect(screen.getByText('0123456')).toBeTruthy()
+  })
+
   it('hands the region its wide flag and clamps expandSidebar to the collapsed state', () => {
     const b = mountShell()
     expect(b.regionOwner().wide).toBe(true)
