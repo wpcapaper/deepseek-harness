@@ -32,7 +32,7 @@ pre-commit:
       run: node_modules/.bin/tsx scripts/gen-third-party-notices.ts && git add THIRD_PARTY_NOTICES.md
 
     - name: whitespace (staged)
-      run: git diff --cached --check
+      run: git --no-pager diff --cached --check
 
     - name: vendor manifest guard
       run: scripts/check-vendor-manifest.sh
