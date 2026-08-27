@@ -1210,6 +1210,14 @@ export interface PiAiCompatProfile {
    */
   supportsThinkingTokenBudget?: boolean
   /**
+   * The request field that caps reasoning tokens, naming the endpoint's own
+   * spelling (`thinking_token_budget` for vLLM, `thinking_budget` for
+   * Qwen/DashScope/SGLang, `thinking_budget_tokens` for llama.cpp);
+   * `openai-completions`. Prefer over {@link supportsThinkingTokenBudget},
+   * which is its vLLM-only alias.
+   */
+  thinkingTokenBudgetField?: PiAiThinkingTokenBudgetField
+  /**
    * Whether the endpoint accepts `strict` in tool definitions;
    * `openai-completions`, the three Responses protocols, `bedrock-converse-stream`.
    */
@@ -1250,11 +1258,14 @@ export type PiAiReasoningEfforts = Partial<Record<ModelThinkingLevel, string | n
 
 /** One reasoning-dispatch wire format a profile may name. */
 export type PiAiThinkingFormat = NonNullable<OpenAICompletionsCompat['thinkingFormat']>
+
+/** The reasoning-token cap request fields pi-ai accepts. */
+export type PiAiThinkingTokenBudgetField = NonNullable<OpenAICompletionsCompat['thinkingTokenBudgetField']>
 ```
 
 Depends on: `Api` (`@earendil-works/pi-ai`) · `CacheRetention` (`@earendil-works/pi-ai`) · `Model` (`@earendil-works/pi-ai`) · `ModelThinkingLevel` (`@earendil-works/pi-ai`) · `OpenAICompletionsCompat` (`@earendil-works/pi-ai`) · [`RetryPolicyConfig`](../packages/llm/llm/src/index.ts) · `ThinkingBudgets` (`@earendil-works/pi-ai`) · `Transport` (`@earendil-works/pi-ai`)
 
-Source: [`packages/llm/llm-pi-ai/src/config.ts:213`](../packages/llm/llm-pi-ai/src/config.ts)
+Source: [`packages/llm/llm-pi-ai/src/config.ts:214`](../packages/llm/llm-pi-ai/src/config.ts)
 
 <a id="deepseek-aidsh-llm-replay"></a>
 
